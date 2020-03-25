@@ -8,9 +8,9 @@ router.use(bodyParser.urlencoded({extended: false}));
 function getConnection(){
   return mysql.createConnection({
     host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'ecommerce'
+    user: 'b750773fff4bd0',
+    password: '7df557be',
+    database: 'heroku_573cf288832869f'
   });
 }
 
