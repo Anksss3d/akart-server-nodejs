@@ -7,9 +7,9 @@ router.use(bodyParser.urlencoded({extended: false}));
 
 function getConnection(){
   return mysql.createConnection({
-    host: 'localhost',
+    host: 'us-cdbr-iron-east-01.cleardb.net',
     user: 'b750773fff4bd0',
-    password: '7df557be',
+    password: 'e836e267c397819',
     database: 'heroku_573cf288832869f'
   });
 }
