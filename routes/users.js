@@ -39,6 +39,7 @@ function getReturnData(data){
 router.get('/', function(req, res, next) {
   connection = getConnection();
   connection.query("select * from users", (err, rows, fields) => {
+    connection.end();
     if(err){
       console.log("Error Occured: "+err);
     }
@@ -53,6 +54,7 @@ router.get('/', function(req, res, next) {
 router.get('/:id', function(req, res, next) {
   connection = getConnection();
   connection.query("select * from users where user_id = ?", [req.params.id], (err, rows, fields) => {
+    connection.end();
     rows = getReturnData(rows);
     if (rows.length == 0){
       res.json(null);
@@ -70,6 +72,7 @@ router.post('/', function(req, res, next) {
   queryString = "insert into users VALUES(user_id, ?, ?, ?, ?)";
   queryData = [req.body.user_first_name, req.body.user_last_name, req.body.user_email, req.body.user_password];
   connection.query(queryString, queryData, (err, rows, fields) => {
+    connection.end();
     if (err){
       response = {
         response_code: 1,
@@ -90,6 +93,7 @@ router.post('/', function(req, res, next) {
 router.put('/:id', function(req, res, next) {
   connection = getConnection();
   if(!req.body.user_first_name || !req.body.user_last_name || !req.body.user_email){
+
     response = {
       response_code: 1,
       response_message: "Please Send all Data"
@@ -111,6 +115,7 @@ router.put('/:id', function(req, res, next) {
           response_code: 0,
         }
       }
+      connection.end();
       res.json(response);
     });
   }
@@ -131,6 +136,7 @@ router.put('/password/:id', function(req, res, next) {
     queryString = "update users set user_password = ? WHERE user_id=?";
     queryData = [req.body.user_password, req.params.id];
     connection.query(queryString, queryData, (err, rows, fields) => {
+      connection.end();
       if (err){
         response = {
           response_code: 1,
@@ -154,6 +160,7 @@ router.delete('/:id', function(req, res, next) {
   queryString = "delete from users WHERE user_id=?";
   queryData = [req.params.id];
   connection.query(queryString, queryData, (err, rows, fields) => {
+    connection.end();
     if (err){
       response = {
         response_code: 1,
@@ -177,6 +184,7 @@ router.post('/check_login', function(req, res, next) {
   queryData = [req.body.user_email, req.body.user_password];
   console.log("params are: "+queryData);
   connection.query(queryString, queryData, (err, rows, fields) => {
+    connection.end();
     if (err){
       response = {
         response_code: 1,

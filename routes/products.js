@@ -16,6 +16,7 @@ function getConnection(){
 }
 
 
+
 function getReturnData(data){
   const dataObj = data.map(row => {
     return {
@@ -52,6 +53,7 @@ function increementCount(connection, id){
     else{
       console.log("Increemented for id: "+id);
     }
+    connection.end();
   });
 }
 
@@ -60,8 +62,22 @@ function increementCount(connection, id){
 router.get('/', function(req, res, next) {
   connection = getConnection();
   connection.query("select * from items", (err, rows, fields) => {
-    data = getReturnData(rows);
-    res.json(data);
+    if (err){
+      console.log("Error Occured"+err);
+      return;
+    }
+    else{
+      var k = 1;
+      rows.forEach(row => {
+        if (row.item_categories.length == 1){
+          console.log("Got of "+k);
+          k++;
+        }
+      });
+      data = getReturnData(rows);
+      res.json(data);
+    }
+    connection.end();
   });
 });
 
@@ -72,6 +88,7 @@ router.get('/random', function(req, res, next) {
   connection.query("select * from items ORDER BY rand() LIMIT 10", (err, rows, fields) => {
     data = getReturnData(rows);
     res.json(data);
+    connection.end();
   });
 });
 
@@ -85,6 +102,7 @@ router.get('/categories', function(req, res, next){
       console.log("Error Occured: "+err);
       return;
     }
+    connection.end();
     res.json(rows);
   });
 });
@@ -93,6 +111,7 @@ router.get('/categories', function(req, res, next){
 router.get('/main_categories', function(req, res, next) {
   connection = getConnection();
   connection.query("select * from all_categories where category_parent=0", (err, rows, fields) => {
+    connection.end();
     if (err){
       console.log("Error Occured : "+err);
       res.json(getErrorJSON(err));
@@ -138,6 +157,7 @@ router.get('/update_categories', function(req, res, next){
         });
       }
     });
+    connection.end();
     res.json(rows);
   });
 
@@ -175,6 +195,7 @@ function update_categories(req, res, next) {
         }
       });
     }
+    connection.end();
     res.json(finalObj);
   });
 }
@@ -185,6 +206,7 @@ function update_categories(req, res, next) {
 router.get('/:id', function(req, res, next) {
   connection = getConnection();
   connection.query("select * from items where item_id = ?", [req.params.id], (err, rows, fields) => {
+    connection.end();
     rows = getReturnData(rows);
     if (rows.length == 0){
       res.json(null);
@@ -192,6 +214,7 @@ router.get('/:id', function(req, res, next) {
     else {
       res.json(rows[0]);
     }
+
   });
 });
 
