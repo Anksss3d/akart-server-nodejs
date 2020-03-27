@@ -2,15 +2,16 @@ var express = require('express');
 var router = express.Router();
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
+const baseUrl = "localhost:3003/"
 
 router.use(bodyParser.urlencoded({extended: false}));
 
 function getConnection(){
   return mysql.createConnection({
-    host: 'us-cdbr-iron-east-01.cleardb.net',
-    user: 'b750773fff4bd0',
-    password: 'e836e267c397819',
-    database: 'heroku_573cf288832869f'
+    host: 'akart.cbdpxm8eyads.us-east-2.rds.amazonaws.com',
+    user: 'akart',
+    password: 'Ank#1123',
+    database: 'akart'
   });
 }
 
@@ -26,6 +27,18 @@ function getReturnData(data){
       item_categories: JSON.parse(row.item_categories),
       item_images: JSON.parse(row.item_images),
       item_specifications: JSON.parse(row.item_specifications)
+    }
+  });
+  return dataObj;
+}
+
+function getCategoryData(data){
+  const dataObj = data.map(row => {
+    return {
+      category_id: row.category_id,
+      category_name: row.category_name,
+      category_tree: JSON.parse(row.category_tree),
+      category_image: baseUrl + row.category_image
     }
   });
   return dataObj;
@@ -73,6 +86,22 @@ router.get('/categories', function(req, res, next){
       return;
     }
     res.json(rows);
+  });
+});
+
+/* GET products listing for given id. */
+router.get('/main_categories', function(req, res, next) {
+  connection = getConnection();
+  connection.query("select * from all_categories where category_parent=0", (err, rows, fields) => {
+    if (err){
+      console.log("Error Occured : "+err);
+      res.json(getErrorJSON(err));
+    }
+    else{
+      rows = getCategoryData(rows);
+      res.json(rows);
+    }
+
   });
 });
 

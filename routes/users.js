@@ -7,11 +7,18 @@ router.use(bodyParser.urlencoded({extended: false}));
 
 function getConnection(){
   return mysql.createConnection({
-    host: 'us-cdbr-iron-east-01.cleardb.net',
-    user: 'b750773fff4bd0',
-    password: 'e836e267c397819',
-    database: 'heroku_573cf288832869f'
+    host: 'akart.cbdpxm8eyads.us-east-2.rds.amazonaws.com',
+    user: 'akart',
+    password: 'Ank#1123',
+    database: 'akart'
   });
+}
+
+function getErrorJSON(err){
+  return {
+    response_code:1,
+    error_message: err
+  }
 }
 
 
@@ -27,13 +34,19 @@ function getReturnData(data){
   return dataObj;
 }
 
+
 /* GET products listing. */
 router.get('/', function(req, res, next) {
   connection = getConnection();
   connection.query("select * from users", (err, rows, fields) => {
+    if(err){
+      console.log("Error Occured: "+err);
+    }
     res.json(getReturnData(rows));
   });
 });
+
+
 
 
 /* GET products listing for given id. */
