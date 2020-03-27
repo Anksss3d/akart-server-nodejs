@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
-const baseUrl = "localhost:3003/"
+const baseUrl = "https://akart-server.herokuapp.com/"
 
 router.use(bodyParser.urlencoded({extended: false}));
 
