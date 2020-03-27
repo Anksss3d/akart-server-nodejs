@@ -2,17 +2,9 @@ var express = require('express');
 var router = express.Router();
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
-
+var global = require('../globals');
 router.use(bodyParser.urlencoded({extended: false}));
 
-function getConnection(){
-  return mysql.createConnection({
-    host: 'akart.cbdpxm8eyads.us-east-2.rds.amazonaws.com',
-    user: 'akart',
-    password: 'Ank#1123',
-    database: 'akart'
-  });
-}
 
 function getErrorJSON(err){
   return {
@@ -37,7 +29,7 @@ function getReturnData(data){
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  connection = getConnection();
+  connection = global.getConnection();
   connection.query("select * from users", (err, rows, fields) => {
     connection.end();
     if(err){
@@ -52,7 +44,7 @@ router.get('/', function(req, res, next) {
 
 /* GET products listing for given id. */
 router.get('/:id', function(req, res, next) {
-  connection = getConnection();
+  connection = global.getConnection();
   connection.query("select * from users where user_id = ?", [req.params.id], (err, rows, fields) => {
     connection.end();
     rows = getReturnData(rows);
@@ -68,7 +60,7 @@ router.get('/:id', function(req, res, next) {
 
 /* POST products listing. */
 router.post('/', function(req, res, next) {
-  connection = getConnection();
+  connection = global.getConnection();
   queryString = "insert into users VALUES(user_id, ?, ?, ?, ?)";
   queryData = [req.body.user_first_name, req.body.user_last_name, req.body.user_email, req.body.user_password];
   connection.query(queryString, queryData, (err, rows, fields) => {
@@ -91,7 +83,7 @@ router.post('/', function(req, res, next) {
 
 /* Update User Information */
 router.put('/:id', function(req, res, next) {
-  connection = getConnection();
+  connection = global.getConnection();
   if(!req.body.user_first_name || !req.body.user_last_name || !req.body.user_email){
 
     response = {
@@ -124,7 +116,7 @@ router.put('/:id', function(req, res, next) {
 
 /* Update User Password */
 router.put('/password/:id', function(req, res, next) {
-  connection = getConnection();
+  connection = global.getConnection();
   if(!req.body.user_password){
     response = {
       response_code: 1,
@@ -156,7 +148,7 @@ router.put('/password/:id', function(req, res, next) {
 
 /* Delete User */
 router.delete('/:id', function(req, res, next) {
-  connection = getConnection();
+  connection = global.getConnection();
   queryString = "delete from users WHERE user_id=?";
   queryData = [req.params.id];
   connection.query(queryString, queryData, (err, rows, fields) => {
@@ -178,7 +170,7 @@ router.delete('/:id', function(req, res, next) {
 
 /* Check User Login */
 router.post('/check_login', function(req, res, next) {
-  connection = getConnection();
+  connection = global.getConnection();
 
   queryString = "select * from users WHERE user_email=? and user_password=?";
   queryData = [req.body.user_email, req.body.user_password];

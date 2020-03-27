@@ -1,19 +1,10 @@
 var express = require('express');
 var router = express.Router();
-const mysql = require('mysql');
 const bodyParser = require('body-parser');
-const baseUrl = "https://akart-server.herokuapp.com/"
-
+const queryString = require('querystring');
 router.use(bodyParser.urlencoded({extended: false}));
+var global = require('../globals');
 
-function getConnection(){
-  return mysql.createConnection({
-    host: 'akart.cbdpxm8eyads.us-east-2.rds.amazonaws.com',
-    user: 'akart',
-    password: 'Ank#1123',
-    database: 'akart'
-  });
-}
 
 
 function getReturnData(data){
@@ -39,43 +30,31 @@ function getCategoryData(data){
       category_id: row.category_id,
       category_name: row.category_name,
       category_tree: JSON.parse(row.category_tree),
-      category_image: baseUrl + row.category_image
+      category_image: global.baseUrl + row.category_image
     }
   });
   return dataObj;
 }
 
 
-function increementCount(connection, id){
-  connection.query("update categories set category_count=category_count+1 where category_name=?", [id], (err, rows) =>{
-    if (err){
-      console.log("Error in increement, err: "+err);
-    }
-    else{
-      console.log("Increemented for id: "+id);
-    }
-    connection.end();
-  });
-}
 
 
 /* GET products listing. */
 router.get('/', function(req, res, next) {
-  connection = getConnection();
-  connection.query("select * from items", (err, rows, fields) => {
+  var queryString = "select * from items";
+  var queryParams = [];
+  if (req.query.search){
+    queryString = "select * from items where item_name LIKE '%"+req.query.search+"%'";
+    queryParams = [];
+  }
+  const connection = global.getConnection();
+  connection.query(queryString, queryParams, (err, rows, fields) => {
     if (err){
       console.log("Error Occured"+err);
       return;
     }
     else{
-      var k = 1;
-      rows.forEach(row => {
-        if (row.item_categories.length == 1){
-          console.log("Got of "+k);
-          k++;
-        }
-      });
-      data = getReturnData(rows);
+      const data = getReturnData(rows);
       res.json(data);
     }
     connection.end();
@@ -85,9 +64,9 @@ router.get('/', function(req, res, next) {
 
 /* GET random products listing. */
 router.get('/random', function(req, res, next) {
-  connection = getConnection();
+  const onnection = global.getConnection();
   connection.query("select * from items ORDER BY rand() LIMIT 10", (err, rows, fields) => {
-    data = getReturnData(rows);
+    const data = getReturnData(rows);
     res.json(data);
     connection.end();
   });
@@ -97,7 +76,7 @@ router.get('/random', function(req, res, next) {
 /* get all category names */
 router.get('/categories', function(req, res, next){
   var set = new Set();
-  connection = getConnection();
+  const connection = global.getConnection();
   connection.query("select * from categories", (err, rows, fields) => {
     if (err){
       console.log("Error Occured: "+err);
@@ -110,7 +89,7 @@ router.get('/categories', function(req, res, next){
 
 /* GET products listing for given id. */
 router.get('/main_categories', function(req, res, next) {
-  connection = getConnection();
+  const connection = global.getConnection();
   connection.query("select * from categories where category_parent=0", (err, rows, fields) => {
     connection.end();
     if (err){
@@ -126,131 +105,21 @@ router.get('/main_categories', function(req, res, next) {
 });
 
 
-/* get all category names */
-function updateParents(req, res, next){
-  connection = getConnection();
-  connection.query("select * from categories", (err, rows, fields) => {
-    if (err){
-      console.log("Error Occured: "+err);
-      return;
-    }
-    rows.forEach(row => {
-      let treeObj = JSON.parse(row.category_tree);
-      if (treeObj.length > 1){
-        treeObj.pop();
-        console.log("treeobj is: "+JSON.stringify(treeObj));
-        connection.query("select * from categories where category_tree = ?", [JSON.stringify(treeObj)], (err2, rows2) => {
-          if (err2){
-            console.log("Error in finding category id");
-          }else{
-            if(rows2.length > 0){
-              connection.query("update categories set category_parent = ? where category_id = ?", [rows2[0].category_id, row.category_id], (err3, rows3)=>{
-                if (err3){
-                  console.log("error in updating : "+err3);
-                }
-                else{
-                  console.log("Updated parent category successfully");
-                }
-              });
-            }
-          }
-        });
-      }
-    });
-    res.json(rows);
-  });
-
-}
 
 
-/* UPDATE category table new way */
-function update_categories(req, res, next) {
-  console.log("Came here ");
-  connection = getConnection();
-  connection.query("select * from items",(err, rows, fields) => {
-    if (err){
-      console.log("Error came : "+err);
-      return;
-    }
-    console.log("no of objects: "+rows.length);
-    finalObj = {};
-    rows.forEach(row => {
-      console.log(row.item_categories);
-      tree = JSON.parse(row.item_categories);
-      parent_tree = [];
-      for(i=0; i<tree.length;i++){
-        parent_tree.push(tree[i]);
-        finalObj[JSON.stringify(parent_tree)] = true;
-      }
-    });
-
-    for (let [key, value] of Object.entries(finalObj)) {
-      connection.query("insert into categories VALUES(category_id, 0, ?, 0)", [key], (err2, rows2) => {
-        if (err2){
-          console.log("couldnt insert as error: "+err2);
-        }
-        else{
-          console.log("inserted category tree: "+key);
-        }
-      });
-    }
-    connection.end();
-    res.json(finalObj);
-  });
-}
 
 
-function deleteSingleCategoryItems(items, connection){
-  var k = 0;
-  console.log("item is: ");
-  items.forEach(item => {
-    categoryJson = JSON.parse(item.item_categories);
-    console.log(categoryJson.length);
-    if (categoryJson.length == 1){
-      console.log("Deleting Item : "+item.item_categories);
-      connection.query("delete from items where item_id = ?", [item.item_id], (err, res) => {
-        if (err){
-          console.log("Error came for deletion: ")
-        }
-        else{
-          console.log("Deleted item ");
-        }
-      });
-      k += 1;
-    }
-  });
-  console.log("Deleted items : "+k);
-}
 
-
-function keep3Categories(req, res, next){
-  connection = getConnection();
-  connection.query("select * from items", (err1, items) => {
-    items.forEach(item => {
-      categoryJson = JSON.parse(item.item_categories);
-      if (categoryJson.length > 3){
-        categoryJson2 = categoryJson.splice(0, 3);
-        connection.query("update items set item_categories = ? where item_id=?", [JSON.stringify(categoryJson2), item.item_id], (err, rows) => {
-          if (err){
-            console.log("Error came : "+err);
-          }else{
-            console.log("Category Trimmed");
-          }
-        })
-      }
-    });
-  });
-}
 
 
 router.get('/addCategories', function(req, res, next){
-  updateParents(req, res, next);
+  global.updateParents(req, res, next);
 });
 
 
 /* GET products listing for given id. */
 router.get('/:id', function(req, res, next) {
-  connection = getConnection();
+  const connection = global.getConnection();
   connection.query("select * from items where item_id = ?", [req.params.id], (err, rows, fields) => {
     connection.end();
     rows = getReturnData(rows);
