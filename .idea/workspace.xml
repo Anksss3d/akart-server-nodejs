@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f3128f7d-1f4f-4d05-aac1-04ce4ef68538" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
@@ -54,14 +53,30 @@
       <workItem from="1585236617465" duration="698000" />
       <workItem from="1585238062924" duration="1962000" />
       <workItem from="1585267003175" duration="799000" />
-      <workItem from="1585268350813" duration="70000" />
+      <workItem from="1585268350813" duration="175000" />
     </task>
+    <task id="LOCAL-00001" summary="Removed Scripts">
+      <created>1585268443996</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1585268443996</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Removed Scripts" />
+    <option name="LAST_COMMIT_MESSAGE" value="Removed Scripts" />
+  </component>
   <component name="WindowStateProjectService">
+    <state x="385" y="11" key="CommitChangelistDialog2" timestamp="1585268443016">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="385" y="11" key="CommitChangelistDialog2/0.0.1536.824@0.0.1536.824" timestamp="1585268443016" />
     <state x="442" y="212" key="EditFileWatcherDialog" timestamp="1584895966274">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
@@ -90,6 +105,10 @@
     <state width="1515" height="218" key="GridCell.Tab.0.right/0.0.1536.824/-1920.0.1920.1040@0.0.1536.824" timestamp="1585239998850" />
     <state width="1515" height="218" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1585267802383" />
     <state width="1899" height="210" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1584938000357" />
+    <state x="361" y="148" key="Vcs.Push.Dialog.v2" timestamp="1585268446719">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="361" y="148" key="Vcs.Push.Dialog.v2/0.0.1536.824@0.0.1536.824" timestamp="1585268446719" />
     <state x="425" y="187" key="run.anything.popup" timestamp="1584917086977">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
