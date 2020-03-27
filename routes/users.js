@@ -35,7 +35,7 @@ function getReturnData(data){
 }
 
 
-/* GET products listing. */
+/* GET users listing. */
 router.get('/', function(req, res, next) {
   connection = getConnection();
   connection.query("select * from users", (err, rows, fields) => {

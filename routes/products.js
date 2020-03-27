@@ -16,7 +16,6 @@ function getConnection(){
 }
 
 
-
 function getReturnData(data){
   const dataObj = data.map(row => {
     return {
@@ -33,6 +32,7 @@ function getReturnData(data){
   return dataObj;
 }
 
+
 function getCategoryData(data){
   const dataObj = data.map(row => {
     return {
@@ -44,6 +44,7 @@ function getCategoryData(data){
   });
   return dataObj;
 }
+
 
 function increementCount(connection, id){
   connection.query("update categories set category_count=category_count+1 where category_name=?", [id], (err, rows) =>{
@@ -110,7 +111,7 @@ router.get('/categories', function(req, res, next){
 /* GET products listing for given id. */
 router.get('/main_categories', function(req, res, next) {
   connection = getConnection();
-  connection.query("select * from all_categories where category_parent=0", (err, rows, fields) => {
+  connection.query("select * from categories where category_parent=0", (err, rows, fields) => {
     connection.end();
     if (err){
       console.log("Error Occured : "+err);
@@ -126,7 +127,7 @@ router.get('/main_categories', function(req, res, next) {
 
 
 /* get all category names */
-router.get('/update_categories', function(req, res, next){
+function updateParents(req, res, next){
   connection = getConnection();
   connection.query("select * from categories", (err, rows, fields) => {
     if (err){
@@ -142,7 +143,6 @@ router.get('/update_categories', function(req, res, next){
           if (err2){
             console.log("Error in finding category id");
           }else{
-            console.log("Came in here with rows2: "+JSON.stringify(rows2));
             if(rows2.length > 0){
               connection.query("update categories set category_parent = ? where category_id = ?", [rows2[0].category_id, row.category_id], (err3, rows3)=>{
                 if (err3){
@@ -157,11 +157,10 @@ router.get('/update_categories', function(req, res, next){
         });
       }
     });
-    connection.end();
     res.json(rows);
   });
 
-});
+}
 
 
 /* UPDATE category table new way */
@@ -201,6 +200,53 @@ function update_categories(req, res, next) {
 }
 
 
+function deleteSingleCategoryItems(items, connection){
+  var k = 0;
+  console.log("item is: ");
+  items.forEach(item => {
+    categoryJson = JSON.parse(item.item_categories);
+    console.log(categoryJson.length);
+    if (categoryJson.length == 1){
+      console.log("Deleting Item : "+item.item_categories);
+      connection.query("delete from items where item_id = ?", [item.item_id], (err, res) => {
+        if (err){
+          console.log("Error came for deletion: ")
+        }
+        else{
+          console.log("Deleted item ");
+        }
+      });
+      k += 1;
+    }
+  });
+  console.log("Deleted items : "+k);
+}
+
+
+function keep3Categories(req, res, next){
+  connection = getConnection();
+  connection.query("select * from items", (err1, items) => {
+    items.forEach(item => {
+      categoryJson = JSON.parse(item.item_categories);
+      if (categoryJson.length > 3){
+        categoryJson2 = categoryJson.splice(0, 3);
+        connection.query("update items set item_categories = ? where item_id=?", [JSON.stringify(categoryJson2), item.item_id], (err, rows) => {
+          if (err){
+            console.log("Error came : "+err);
+          }else{
+            console.log("Category Trimmed");
+          }
+        })
+      }
+    });
+  });
+}
+
+
+router.get('/addCategories', function(req, res, next){
+  updateParents(req, res, next);
+});
+
 
 /* GET products listing for given id. */
 router.get('/:id', function(req, res, next) {
@@ -214,7 +260,6 @@ router.get('/:id', function(req, res, next) {
     else {
       res.json(rows[0]);
     }
-
   });
 });
 
