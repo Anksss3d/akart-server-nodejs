@@ -1,4 +1,5 @@
 const mysql = require('mysql');
+var sqlEscape = require('sqlstring');
 
 function Globals(){
 }
@@ -141,6 +142,114 @@ Globals.increementCount = function(connection, id){
             connection.end();
         });
     }
+
+Globals.addMainCategoryPrefix = function(req, res, next){
+
+    const addPrefix = function(parentId, parentString, connection){
+        console.log("Connection obejcts is: "+connection);
+        connection.query("select * from categories where category_parent=?",[parentId], (err2, rows2)=>{
+            if(err2){
+                console.log("error in getting categories using parent id"+err2)
+            }else{
+                rows2.forEach(row => {
+                    treeJson = JSON.parse(row.category_tree);
+                    // console.log("datas: "+JSON.stringify(treeJson)+"\tparent: "+parentString);
+                    treeJson.splice(0, 0, parentString);
+                    // console.log("After it: "+JSON.stringify(treeJson));
+                    connection.query("update categories set category_tree = ? where category_id=?", [JSON.stringify(treeJson), row.category_id], (err3, rows3)=>{
+                        if(err3){
+                            console.log("Error in updating category");
+                        }else{
+                            console.log("Successfully updated ");
+                            addPrefix(row.category_id, parentString, connection);
+                        }
+                    });
+                });
+            }
+        });
+    }
+
+    connection = this.getConnection();
+
+    connection.query("select * from categories where category_parent= 0", (err, rows)=>{
+       if (err){
+           console.log("error in main category"+err);
+       }
+       else{
+           rows.forEach(row=>{
+               addPrefix(row.category_id, (JSON.parse(row.category_tree)[0]), connection);
+           });
+       }
+    });
+}
+
+Globals.cleanCategories = function(req, res, next){
+    connection = this.getConnection();
+    connection.query("select * from categories", (err, rows)=>{
+        if (err){
+            console.log("error in main category"+err);
+        }
+        else{
+            rows.forEach(row=>{
+                treeJSON = JSON.parse(row.category_tree);
+                while (treeJSON[0] == treeJSON[1]){
+                    treeJSON.splice(0, 1);
+                }
+                connection.query("update categories set category_tree =? where category_id=?", [JSON.stringify(treeJSON), row.category_id], (err2, rows2)=>{
+                    if(err2){
+                        console.log("Error came in update : "+err2);
+                    }
+                    else{
+                        console.log("Updated successfully for : "+row.category_id);
+                    }
+                });
+            });
+            res.json([]);
+        }
+    });
+}
+
+
+Globals.addCategoryToItems = function(req, res, next){
+    connection = this.getConnection();
+    connection.query("select * from items", (err, rows)=>{
+        if (err){
+            console.log("error in main category"+err);
+        }
+        else{
+            rows.forEach(row=>{
+                newCategoryTree = row.item_categories.substr(1);
+                queryString = "select * from categories where category_tree LIKE ?";
+                // console.log("new String is: "+queryString);
+                connection.query(queryString,['%'+newCategoryTree] ,(err2, rows2)=>{
+                    if(err2){
+                        console.log("Error came in selecting category: "+err2);
+                    }
+                    else{
+                        if (rows2.length==0){
+                            console.log("No Row Found, idk how for : "+row.item_categories);
+                        }
+                        else {
+                            if (rows2.length != 1) {
+                                console.log("Somethings' wrong for this, lets see rows ");
+                            }
+                            connection.query("update items set item_categories=? where item_id=?", [rows2[0].category_tree, row.item_id], (err3, rows3)=>{
+                                if(err3){
+                                    console.log("Error came in udpate : "+err3);
+                                }else{
+                                    console.log("Updated items category tree for : "+row.item_id);
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+            res.json([]);
+        }
+    });
+}
+
+
 
 
 module.exports = Globals;

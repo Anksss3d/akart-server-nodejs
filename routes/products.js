@@ -41,13 +41,18 @@ function getCategoryData(data){
 
 /* GET products listing. */
 router.get('/', function(req, res, next) {
+  const connection = global.getConnection();
   var queryString = "select * from items";
   var queryParams = [];
   if (req.query.search){
-    queryString = "select * from items where item_name LIKE '%"+req.query.search+"%'";
+    queryString = "select * from items where item_name LIKE '%"+req.query.search+"%' or item_categories LIKE '%"+req.query.search+"%'";
     queryParams = [];
   }
-  const connection = global.getConnection();
+  else if (req.query.category){
+    queryString = "SELECT i.* FROM items i, (SELECT SUBSTR(category_tree, 1, LENGTH(category_tree)-1) as category_tree from categories where category_id = ?) as c where i.item_categories LIKE CONCAT(c.category_tree, '%')";
+    queryParams = [req.query.category];
+  }
+
   connection.query(queryString, queryParams, (err, rows, fields) => {
     if (err){
       console.log("Error Occured"+err);
@@ -105,15 +110,8 @@ router.get('/main_categories', function(req, res, next) {
 });
 
 
-
-
-
-
-
-
-
 router.get('/addCategories', function(req, res, next){
-  global.updateParents(req, res, next);
+  // global.addCategoryToItems(req, res, next);
 });
 
 
